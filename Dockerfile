@@ -1,0 +1,31 @@
+FROM ubuntu:18.04
+
+#RUN perl -p -i.bak -e 's%https?://(?!security)[^ \t]+%http://jp.archive.ubuntu.com/ubuntu/%g' /etc/apt/sources.list
+
+RUN perl -p -i.bak -e 's%https?://(?!security)[^ \t]+%http://172.24.52.11/jp.archive.ubuntu.com/ubuntu/%g' /etc/apt/sources.list
+
+
+RUN apt-get update 
+RUN apt-get upgrade -y
+RUN apt-get install python3 python3-pip -y
+RUN apt-get install -y software-properties-common
+RUN apt-get install curl emacs wget sudo git  -y --fix-missing
+
+# ユーザーを作成
+RUN useradd -m sugeno
+# ルート権限を付与
+RUN gpasswd -a sugeno sudo
+# パスワードはpassに設定
+RUN echo 'sugeno:sugeno' | chpasswd
+
+WORKDIR /home/sugeno
+
+#==========emacs==========
+RUN echo "(setq make-backup-files nil)" >> ~sugeno/.emacs
+RUN echo "(set-default-coding-systems 'utf-8-unix)" >> ~sugeno/.emacs
+
+RUN echo "alias e='emacs'" >> ~sugeno/.bashrc
+RUN echo "export LC_CTYPE='C.UTF-8'" >> ~sugeno/.bashrc
+RUN . ~sugeno/.bashrc
+
+RUN chown sugeno:sugeno /home/sugeno/.emacs
